@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サラリーマンRPG - ダーク会社編</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- タイトル画面 -->
+    <div id="titleScreen" class="screen active">
+        <div class="title-container">
+            <h1>サラリーマンRPG</h1>
+            <h2>ダーク会社編</h2>
+            <div class="start-button" onclick="startGame()">START</div>
+            <div class="instructions">
+                <p>会社のビルを探索しよう！</p>
+                <p>敵と戦って最上階を目指せ！</p>
+                <p>【操作方法】</p>
+                <p>矢印キー/WASD: 移動</p>
+                <p>Zキー/Enter: 攻撃</p>
+                <p>Xキー/Space: 残業アタック</p>
+                <p>Mキー: 音声切替</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="gameScreen" class="screen">
+        <!-- ヘッダー -->
+        <div id="header">
+            <div class="status-bar">
+                <div class="player-info">
+                    <span>田中太郎</span>
+                    <div class="hp-container">
+                        <span>HP:</span>
+                        <div class="hp-bar">
+                            <div id="playerHpBar" class="hp-fill"></div>
+                        </div>
+                        <span id="playerHpText">100/100</span>
+                    </div>
+                </div>
+                <div class="floor-info">
+                    <span id="currentFloor">1階</span>
+                    <div class="money-display" id="moneyDisplay">¥1000</div>
+                    <button id="soundToggle" class="sound-toggle" onclick="toggleSound()">♪ ON</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- メインゲームエリア -->
+        <div id="gameArea">
+            <div id="mapContainer">
+                <svg id="gameMap" viewBox="0 0 320 240">
+                    <!-- マップがここに描画される -->
+                </svg>
+            </div>
+        </div>
+
+        <!-- コントローラー -->
+        <div id="controller">
+            <div class="dpad">
+                <button class="dpad-btn up" onmousedown="movePlayer('up')" ontouchstart="movePlayer('up')">↑</button>
+                <button class="dpad-btn down" onmousedown="movePlayer('down')" ontouchstart="movePlayer('down')">↓</button>
+                <button class="dpad-btn left" onmousedown="movePlayer('left')" ontouchstart="movePlayer('left')">←</button>
+                <button class="dpad-btn right" onmousedown="movePlayer('right')" ontouchstart="movePlayer('right')">→</button>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn b-btn" onmousedown="actionB()" ontouchstart="actionB()">B</button>
+                <button class="action-btn a-btn" onmousedown="actionA()" ontouchstart="actionA()">A</button>
+                <div class="menu-buttons">
+                    <button class="menu-btn" onclick="toggleSound()">音声</button>
+                    <button class="menu-btn" onclick="showHelp()">ヘルプ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 戦闘画面オーバーレイ -->
+    <div id="battleOverlay" class="overlay">
+        <div class="battle-container">
+            <div class="battle-header">
+                <h3>バトル開始！</h3>
+            </div>
+            
+            <div class="battle-area">
+                <div class="player-battle">
+                    <div class="character-sprite player-sprite"></div>
+                    <div class="character-info">
+                        <div class="name">田中太郎</div>
+                        <div class="hp-container">
+                            <div class="hp-bar">
+                                <div id="battlePlayerHpBar" class="hp-fill"></div>
+                            </div>
+                            <span id="battlePlayerHpText">100/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vs-text">VS</div>
+
+                <div class="enemy-battle">
+                    <div id="enemySprite" class="character-sprite enemy-sprite"></div>
+                    <div class="character-info">
+                        <div id="enemyName" class="name">新人社員</div>
+                        <div class="hp-container">
+                            <div class="hp-bar">
+                                <div id="enemyHpBar" class="hp-fill"></div>
+                            </div>
+                            <span id="enemyHpText">20/20</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="battleLog" class="battle-log">
+                <p>戦闘開始！</p>
+            </div>
+
+            <div class="battle-controls">
+                <button class="battle-btn attack-btn" onclick="playerAttack()">攻撃</button>
+                <button class="battle-btn special-btn" onclick="playerSpecialAttack()">残業アタック</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ショップ画面オーバーレイ -->
+    <div id="shopOverlay" class="overlay">
+        <div class="shop-container">
+            <div class="shop-header">
+                <h3>社内売店</h3>
+            </div>
+            
+            <div class="shop-items" id="shopItems">
+                <!-- ショップアイテムがここに表示される -->
+            </div>
+
+            <button class="close-shop-btn" onclick="closeShop()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- エレベーター演出 -->
+    <div id="elevatorOverlay" class="overlay">
+        <div class="elevator-container">
+            <div class="elevator-animation">
+                <div class="elevator-door left"></div>
+                <div class="elevator-door right"></div>
+            </div>
+            <div class="elevator-text">
+                <p id="elevatorMessage">エレベーターで移動中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ヘルプ画面オーバーレイ -->
+    <div id="helpOverlay" class="overlay">
+        <div class="help-container">
+            <div class="help-header">
+                <h3>操作方法</h3>
+            </div>
+            <div class="help-content">
+                <div class="help-section">
+                    <h4>移動</h4>
+                    <p>矢印キー または WASD</p>
+                </div>
+                <div class="help-section">
+                    <h4>戦闘</h4>
+                    <p>Zキー/Enter: 攻撃</p>
+                    <p>Xキー/Space: 残業アタック（強力）</p>
+                </div>
+                <div class="help-section">
+                    <h4>マップの記号</h4>
+                    <p>青い人: あなた（田中太郎）</p>
+                    <p>1,2,3の敵: 会社の敵</p>
+                    <p>黄色い四角: エレベーター</p>
+                    <p>紫の四角（¥）: ショップ</p>
+                    <p>茶色い四角: 机（通れない）</p>
+                </div>
+                <div class="help-section">
+                    <h4>ゲームの目標</h4>
+                    <p>10階の最上階を目指してボスを倒せ！</p>
+                </div>
+            </div>
+            <button class="close-help-btn" onclick="closeHelp()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- ゲームオーバー画面 -->
+    <div id="gameOverScreen" class="screen">
+        <div class="game-over-container">
+            <h1>ゲームオーバー</h1>
+            <p>お疲れ様でした...</p>
+            <p>会社の闇に飲み込まれてしまいました</p>
+            <button onclick="restartGame()">もう一度挑戦</button>
+        </div>
+    </div>
+
+    <!-- ゲームクリア画面 -->
+    <div id="gameClearScreen" class="screen">
+        <div class="game-clear-container">
+            <h1>ゲームクリア！</h1>
+            <p>おめでとうございます！</p>
+            <p>会社の最上階にたどり着きました！</p>
+            <p>あなたは真のサラリーマンです！</p>
+            <button onclick="restartGame()">もう一度プレイ</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
