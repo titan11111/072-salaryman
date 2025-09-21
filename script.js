@@ -320,194 +320,447 @@ function startGame() {
     console.log('ゲーム開始！');
 }
 
+// SVGユーティリティとキャラクター描画
+function createSVGElement(tagName, attributes = {}) {
+    const element = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+    Object.entries(attributes).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            element.setAttribute(key, typeof value === 'number' ? value.toString() : value);
+        }
+    });
+    return element;
+}
+
+function createFloorTile(x, y, cellSize, options = {}) {
+    const {
+        fill = '#95a5a6',
+        stroke = '#7f8c8d',
+        strokeWidth = 0.5
+    } = options;
+
+    return createSVGElement('rect', {
+        x,
+        y,
+        width: cellSize,
+        height: cellSize,
+        fill,
+        stroke,
+        'stroke-width': typeof strokeWidth === 'number' ? strokeWidth.toString() : strokeWidth
+    });
+}
+
+const KAKU_CHARACTER_SKIN_COLOR = '#f6d7b8';
+const KAKU_CHARACTER_HAIR_PLAYER = '#1f3a56';
+const KAKU_CHARACTER_HAIR_ENEMY = '#2c3e50';
+
+function createKakuCharacterSprite({
+    x,
+    y,
+    cellSize,
+    suitColor,
+    accentColor,
+    labelText,
+    labelColor = '#ffffff',
+    isPlayer = false
+}) {
+    const sprite = createSVGElement('g', {
+        class: isPlayer ? 'player-character' : 'enemy-character'
+    });
+
+    const centerX = x + cellSize / 2;
+    const bodyTop = y + cellSize * 0.32;
+    const bodyWidth = cellSize * 0.62;
+    const bodyHeight = cellSize * 0.5;
+
+    // 影
+    sprite.appendChild(createSVGElement('ellipse', {
+        cx: centerX,
+        cy: y + cellSize * 0.88,
+        rx: cellSize * 0.22,
+        ry: cellSize * 0.08,
+        fill: 'rgba(0, 0, 0, 0.2)'
+    }));
+
+    // 腕
+    const armWidth = cellSize * 0.12;
+    const armHeight = cellSize * 0.36;
+    const armsY = bodyTop + cellSize * 0.04;
+    const armAttributes = {
+        width: armWidth,
+        height: armHeight,
+        rx: cellSize * 0.04,
+        ry: cellSize * 0.04,
+        fill: suitColor,
+        stroke: 'rgba(0, 0, 0, 0.35)',
+        'stroke-width': cellSize * 0.02
+    };
+
+    sprite.appendChild(createSVGElement('rect', {
+        ...armAttributes,
+        x: centerX - bodyWidth / 2 - armWidth + cellSize * 0.05,
+        y: armsY
+    }));
+    sprite.appendChild(createSVGElement('rect', {
+        ...armAttributes,
+        x: centerX + bodyWidth / 2 - cellSize * 0.05,
+        y: armsY
+    }));
+
+    // 体
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - bodyWidth / 2,
+        y: bodyTop,
+        width: bodyWidth,
+        height: bodyHeight,
+        rx: cellSize * 0.08,
+        ry: cellSize * 0.08,
+        fill: suitColor,
+        stroke: 'rgba(0, 0, 0, 0.35)',
+        'stroke-width': cellSize * 0.025
+    }));
+
+    // シャツ
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - cellSize * 0.12,
+        y: bodyTop + cellSize * 0.07,
+        width: cellSize * 0.24,
+        height: cellSize * 0.22,
+        rx: cellSize * 0.03,
+        ry: cellSize * 0.03,
+        fill: '#ecf0f1'
+    }));
+
+    // ネクタイ
+    sprite.appendChild(createSVGElement('polygon', {
+        points: [
+            `${centerX},${bodyTop + cellSize * 0.08}`,
+            `${centerX - cellSize * 0.04},${bodyTop + cellSize * 0.16}`,
+            `${centerX},${bodyTop + cellSize * 0.18}`,
+            `${centerX + cellSize * 0.04},${bodyTop + cellSize * 0.16}`
+        ].join(' '),
+        fill: accentColor,
+        stroke: 'rgba(0, 0, 0, 0.25)',
+        'stroke-width': cellSize * 0.01
+    }));
+
+    sprite.appendChild(createSVGElement('polygon', {
+        points: [
+            `${centerX},${bodyTop + cellSize * 0.18}`,
+            `${centerX - cellSize * 0.05},${bodyTop + cellSize * 0.3}`,
+            `${centerX},${bodyTop + cellSize * 0.38}`,
+            `${centerX + cellSize * 0.05},${bodyTop + cellSize * 0.3}`
+        ].join(' '),
+        fill: accentColor,
+        stroke: 'rgba(0, 0, 0, 0.25)',
+        'stroke-width': cellSize * 0.01
+    }));
+
+    // ハイライト
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - bodyWidth / 2 + cellSize * 0.05,
+        y: bodyTop + cellSize * 0.05,
+        width: cellSize * 0.08,
+        height: bodyHeight - cellSize * 0.1,
+        rx: cellSize * 0.04,
+        fill: 'rgba(255, 255, 255, 0.15)'
+    }));
+
+    // ベルト
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - bodyWidth / 2,
+        y: bodyTop + bodyHeight * 0.7,
+        width: bodyWidth,
+        height: cellSize * 0.05,
+        fill: 'rgba(0, 0, 0, 0.35)'
+    }));
+
+    // 足元
+    const footY = bodyTop + bodyHeight - cellSize * 0.02;
+    const footWidth = cellSize * 0.24;
+    const footHeight = cellSize * 0.1;
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - bodyWidth / 2,
+        y: footY,
+        width: footWidth,
+        height: footHeight,
+        rx: cellSize * 0.03,
+        fill: '#2c3e50'
+    }));
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX + bodyWidth / 2 - footWidth,
+        y: footY,
+        width: footWidth,
+        height: footHeight,
+        rx: cellSize * 0.03,
+        fill: '#2c3e50'
+    }));
+
+    // 首
+    sprite.appendChild(createSVGElement('rect', {
+        x: centerX - cellSize * 0.06,
+        y: bodyTop - cellSize * 0.08,
+        width: cellSize * 0.12,
+        height: cellSize * 0.08,
+        rx: cellSize * 0.02,
+        fill: KAKU_CHARACTER_SKIN_COLOR
+    }));
+
+    // 顔
+    const headRadius = cellSize * 0.18;
+    const headCenterY = y + cellSize * 0.24;
+    sprite.appendChild(createSVGElement('circle', {
+        cx: centerX,
+        cy: headCenterY,
+        r: headRadius,
+        fill: KAKU_CHARACTER_SKIN_COLOR,
+        stroke: '#d4a373',
+        'stroke-width': cellSize * 0.02
+    }));
+
+    const hairColor = isPlayer ? KAKU_CHARACTER_HAIR_PLAYER : KAKU_CHARACTER_HAIR_ENEMY;
+    const hairPath = [
+        `M${centerX - headRadius} ${headCenterY - headRadius * 0.9}`,
+        `Q${centerX} ${headCenterY - headRadius * 1.35} ${centerX + headRadius} ${headCenterY - headRadius * 0.9}`,
+        `L${centerX + headRadius} ${headCenterY - headRadius * 0.2}`,
+        `Q${centerX} ${headCenterY - headRadius * 0.65} ${centerX - headRadius} ${headCenterY - headRadius * 0.2}`,
+        'Z'
+    ].join(' ');
+    sprite.appendChild(createSVGElement('path', {
+        d: hairPath,
+        fill: hairColor
+    }));
+
+    // 目・口
+    const eyeY = headCenterY - cellSize * 0.03;
+    const eyeOffset = cellSize * 0.06;
+    const eyeRadius = Math.max(cellSize * 0.02, 1);
+    sprite.appendChild(createSVGElement('circle', {
+        cx: centerX - eyeOffset,
+        cy: eyeY,
+        r: eyeRadius,
+        fill: '#2c3e50'
+    }));
+    sprite.appendChild(createSVGElement('circle', {
+        cx: centerX + eyeOffset,
+        cy: eyeY,
+        r: eyeRadius,
+        fill: '#2c3e50'
+    }));
+
+    sprite.appendChild(createSVGElement('path', {
+        d: `M${centerX - cellSize * 0.05} ${headCenterY + cellSize * 0.05} Q${centerX} ${headCenterY + cellSize * 0.08} ${centerX + cellSize * 0.05} ${headCenterY + cellSize * 0.05}`,
+        stroke: '#c0392b',
+        'stroke-width': Math.max(cellSize * 0.015, 1),
+        fill: 'none',
+        'stroke-linecap': 'round'
+    }));
+
+    const cheekRadius = cellSize * 0.03;
+    const cheekY = headCenterY + cellSize * 0.02;
+    sprite.appendChild(createSVGElement('circle', {
+        cx: centerX - eyeOffset,
+        cy: cheekY,
+        r: cheekRadius,
+        fill: 'rgba(231, 76, 60, 0.25)'
+    }));
+    sprite.appendChild(createSVGElement('circle', {
+        cx: centerX + eyeOffset,
+        cy: cheekY,
+        r: cheekRadius,
+        fill: 'rgba(231, 76, 60, 0.25)'
+    }));
+
+    if (labelText) {
+        const badgeWidth = cellSize * 0.18;
+        const badgeHeight = cellSize * 0.22;
+        const badgeX = centerX + bodyWidth / 2 - badgeWidth - cellSize * 0.02;
+        const badgeY = bodyTop + cellSize * 0.16;
+
+        sprite.appendChild(createSVGElement('rect', {
+            x: badgeX,
+            y: badgeY,
+            width: badgeWidth,
+            height: badgeHeight,
+            rx: cellSize * 0.03,
+            ry: cellSize * 0.03,
+            fill: accentColor,
+            stroke: 'rgba(0, 0, 0, 0.35)',
+            'stroke-width': cellSize * 0.015
+        }));
+
+        const badgeLabel = createSVGElement('text', {
+            x: badgeX + badgeWidth / 2,
+            y: badgeY + badgeHeight / 2 + cellSize * 0.01,
+            'text-anchor': 'middle',
+            'dominant-baseline': 'middle',
+            'font-family': 'monospace',
+            'font-size': Math.max(cellSize * 0.18, 8),
+            'font-weight': 'bold',
+            fill: labelColor,
+            'pointer-events': 'none'
+        });
+        badgeLabel.textContent = labelText;
+        sprite.appendChild(badgeLabel);
+    } else {
+        // プレイヤーのブリーフケース
+        sprite.appendChild(createSVGElement('rect', {
+            x: centerX + bodyWidth / 2 - cellSize * 0.28,
+            y: bodyTop + cellSize * 0.22,
+            width: cellSize * 0.2,
+            height: cellSize * 0.16,
+            rx: cellSize * 0.04,
+            ry: cellSize * 0.04,
+            fill: '#1f2d3a',
+            stroke: 'rgba(255, 255, 255, 0.2)',
+            'stroke-width': cellSize * 0.02
+        }));
+
+        sprite.appendChild(createSVGElement('rect', {
+            x: centerX + bodyWidth / 2 - cellSize * 0.22,
+            y: bodyTop + cellSize * 0.18,
+            width: cellSize * 0.1,
+            height: cellSize * 0.05,
+            rx: cellSize * 0.02,
+            fill: '#1f2d3a'
+        }));
+    }
+
+    return sprite;
+}
+
+function createPlayerSprite(x, y, cellSize) {
+    return createKakuCharacterSprite({
+        x,
+        y,
+        cellSize,
+        suitColor: '#3498db',
+        accentColor: '#e74c3c',
+        isPlayer: true
+    });
+}
+
+function createEnemySprite(x, y, cellSize, enemyColor, enemyIndex) {
+    const tiePalette = ['#c0392b', '#16a085', '#f39c12', '#8e44ad'];
+    const accentColor = tiePalette[enemyIndex % tiePalette.length];
+
+    return createKakuCharacterSprite({
+        x,
+        y,
+        cellSize,
+        suitColor: enemyColor,
+        accentColor,
+        labelText: (enemyIndex + 1).toString(),
+        isPlayer: false
+    });
+}
+
 // SVGマップチップ作成
 function createSVGChip(type, x, y, cellSize, enemyIndex = 0) {
-    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    
+    const group = createSVGElement('g');
+
     switch (type) {
         case 'wall':
-            const wall = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            wall.setAttribute('x', x);
-            wall.setAttribute('y', y);
-            wall.setAttribute('width', cellSize);
-            wall.setAttribute('height', cellSize);
-            wall.setAttribute('fill', '#2c3e50');
-            wall.setAttribute('stroke', '#34495e');
-            wall.setAttribute('stroke-width', '1');
-            group.appendChild(wall);
+            group.appendChild(createSVGElement('rect', {
+                x,
+                y,
+                width: cellSize,
+                height: cellSize,
+                fill: '#2c3e50',
+                stroke: '#34495e',
+                'stroke-width': 1
+            }));
             break;
-            
+
         case 'floor':
-            const floor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            floor.setAttribute('x', x);
-            floor.setAttribute('y', y);
-            floor.setAttribute('width', cellSize);
-            floor.setAttribute('height', cellSize);
-            floor.setAttribute('fill', '#95a5a6');
-            floor.setAttribute('stroke', '#7f8c8d');
-            floor.setAttribute('stroke-width', '0.5');
-            group.appendChild(floor);
+            group.appendChild(createFloorTile(x, y, cellSize));
             break;
-            
+
         case 'enemy':
-            // 床
-            const enemyFloor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            enemyFloor.setAttribute('x', x);
-            enemyFloor.setAttribute('y', y);
-            enemyFloor.setAttribute('width', cellSize);
-            enemyFloor.setAttribute('height', cellSize);
-            enemyFloor.setAttribute('fill', '#95a5a6');
-            group.appendChild(enemyFloor);
-            
-            // 敵キャラクター
+            group.appendChild(createFloorTile(x, y, cellSize));
+
             const enemyColors = getEnemyColorsForFloor(gameState.currentFloor);
             const enemyColor = enemyColors[enemyIndex] || '#e74c3c';
-            
-            const enemy = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            
-            // 敵の体
-            const enemyBody = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            enemyBody.setAttribute('x', x + cellSize * 0.2);
-            enemyBody.setAttribute('y', y + cellSize * 0.3);
-            enemyBody.setAttribute('width', cellSize * 0.6);
-            enemyBody.setAttribute('height', cellSize * 0.5);
-            enemyBody.setAttribute('fill', enemyColor);
-            enemyBody.setAttribute('stroke', '#c0392b');
-            enemyBody.setAttribute('stroke-width', '1');
-            enemy.appendChild(enemyBody);
-            
-            // 敵の頭
-            const enemyHead = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            enemyHead.setAttribute('cx', x + cellSize / 2);
-            enemyHead.setAttribute('cy', y + cellSize * 0.25);
-            enemyHead.setAttribute('r', cellSize * 0.15);
-            enemyHead.setAttribute('fill', enemyColor);
-            enemyHead.setAttribute('stroke', '#c0392b');
-            enemyHead.setAttribute('stroke-width', '1');
-            enemy.appendChild(enemyHead);
-            
-            // 番号
-            const mark = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            mark.setAttribute('x', x + cellSize / 2);
-            mark.setAttribute('y', y + cellSize * 0.8);
-            mark.setAttribute('text-anchor', 'middle');
-            mark.setAttribute('font-family', 'monospace');
-            mark.setAttribute('font-size', '8');
-            mark.setAttribute('font-weight', 'bold');
-            mark.setAttribute('fill', '#ffffff');
-            mark.textContent = (enemyIndex + 1).toString();
-            enemy.appendChild(mark);
-            
-            group.appendChild(enemy);
+            group.appendChild(createEnemySprite(x, y, cellSize, enemyColor, enemyIndex));
             break;
-            
+
         case 'desk':
-            // 床
-            const deskFloor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            deskFloor.setAttribute('x', x);
-            deskFloor.setAttribute('y', y);
-            deskFloor.setAttribute('width', cellSize);
-            deskFloor.setAttribute('height', cellSize);
-            deskFloor.setAttribute('fill', '#95a5a6');
-            group.appendChild(deskFloor);
-            
-            // 机
-            const desk = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            desk.setAttribute('x', x + 5);
-            desk.setAttribute('y', y + 5);
-            desk.setAttribute('width', cellSize - 10);
-            desk.setAttribute('height', cellSize - 10);
-            desk.setAttribute('fill', '#8b4513');
-            desk.setAttribute('stroke', '#654321');
-            desk.setAttribute('stroke-width', '1');
-            group.appendChild(desk);
+            group.appendChild(createFloorTile(x, y, cellSize));
+
+            group.appendChild(createSVGElement('rect', {
+                x: x + 5,
+                y: y + 5,
+                width: cellSize - 10,
+                height: cellSize - 10,
+                fill: '#8b4513',
+                stroke: '#654321',
+                'stroke-width': 1
+            }));
+
+            group.appendChild(createSVGElement('rect', {
+                x: x + 7,
+                y: y + 7,
+                width: cellSize - 14,
+                height: (cellSize - 10) / 4,
+                fill: 'rgba(255, 255, 255, 0.1)'
+            }));
             break;
-            
+
         case 'elevator':
-            // 床
-            const elevatorFloor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            elevatorFloor.setAttribute('x', x);
-            elevatorFloor.setAttribute('y', y);
-            elevatorFloor.setAttribute('width', cellSize);
-            elevatorFloor.setAttribute('height', cellSize);
-            elevatorFloor.setAttribute('fill', '#95a5a6');
-            group.appendChild(elevatorFloor);
-            
-            // エレベーター
-            const elevator = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            elevator.setAttribute('x', x + 3);
-            elevator.setAttribute('y', y + 3);
-            elevator.setAttribute('width', cellSize - 6);
-            elevator.setAttribute('height', cellSize - 6);
-            elevator.setAttribute('fill', '#f39c12');
-            elevator.setAttribute('stroke', '#d68910');
-            elevator.setAttribute('stroke-width', '2');
-            group.appendChild(elevator);
+            group.appendChild(createFloorTile(x, y, cellSize));
+
+            group.appendChild(createSVGElement('rect', {
+                x: x + 3,
+                y: y + 3,
+                width: cellSize - 6,
+                height: cellSize - 6,
+                rx: cellSize * 0.08,
+                ry: cellSize * 0.08,
+                fill: '#f39c12',
+                stroke: '#d68910',
+                'stroke-width': 2
+            }));
+
+            group.appendChild(createSVGElement('line', {
+                x1: x + cellSize / 2,
+                y1: y + 6,
+                x2: x + cellSize / 2,
+                y2: y + cellSize - 6,
+                stroke: 'rgba(0, 0, 0, 0.4)',
+                'stroke-width': 1.5
+            }));
             break;
-            
+
         case 'shop':
-            // 床
-            const shopFloor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shopFloor.setAttribute('x', x);
-            shopFloor.setAttribute('y', y);
-            shopFloor.setAttribute('width', cellSize);
-            shopFloor.setAttribute('height', cellSize);
-            shopFloor.setAttribute('fill', '#95a5a6');
-            group.appendChild(shopFloor);
-            
-            // ショップ
-            const shop = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shop.setAttribute('x', x + 4);
-            shop.setAttribute('y', y + 4);
-            shop.setAttribute('width', cellSize - 8);
-            shop.setAttribute('height', cellSize - 8);
-            shop.setAttribute('fill', '#9b59b6');
-            shop.setAttribute('stroke', '#8e44ad');
-            shop.setAttribute('stroke-width', '2');
-            
-            // 円マーク
-            const yenMark = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            yenMark.setAttribute('x', x + cellSize / 2);
-            yenMark.setAttribute('y', y + cellSize / 2 + 4);
-            yenMark.setAttribute('text-anchor', 'middle');
-            yenMark.setAttribute('font-family', 'monospace');
-            yenMark.setAttribute('font-size', '16');
-            yenMark.setAttribute('font-weight', 'bold');
-            yenMark.setAttribute('fill', '#ffffff');
-            yenMark.textContent = '¥';
-            
-            group.appendChild(shop);
-            group.appendChild(yenMark);
+            group.appendChild(createFloorTile(x, y, cellSize));
+
+            group.appendChild(createSVGElement('rect', {
+                x: x + 4,
+                y: y + 4,
+                width: cellSize - 8,
+                height: cellSize - 8,
+                rx: cellSize * 0.08,
+                ry: cellSize * 0.08,
+                fill: '#9b59b6',
+                stroke: '#8e44ad',
+                'stroke-width': 2
+            }));
+
+            group.appendChild(createSVGElement('text', {
+                x: x + cellSize / 2,
+                y: y + cellSize / 2 + 4,
+                'text-anchor': 'middle',
+                'font-family': 'monospace',
+                'font-size': 16,
+                'font-weight': 'bold',
+                fill: '#ffffff'
+            })).textContent = '¥';
             break;
-            
+
         case 'player':
-            const player = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            
-            // プレイヤーの体
-            const playerBody = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            playerBody.setAttribute('x', x + cellSize * 0.2);
-            playerBody.setAttribute('y', y + cellSize * 0.3);
-            playerBody.setAttribute('width', cellSize * 0.6);
-            playerBody.setAttribute('height', cellSize * 0.5);
-            playerBody.setAttribute('fill', '#3498db');
-            playerBody.setAttribute('stroke', '#2980b9');
-            playerBody.setAttribute('stroke-width', '2');
-            player.appendChild(playerBody);
-            
-            // プレイヤーの頭
-            const playerHead = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            playerHead.setAttribute('cx', x + cellSize / 2);
-            playerHead.setAttribute('cy', y + cellSize * 0.25);
-            playerHead.setAttribute('r', cellSize * 0.15);
-            playerHead.setAttribute('fill', '#3498db');
-            playerHead.setAttribute('stroke', '#2980b9');
-            playerHead.setAttribute('stroke-width', '2');
-            player.appendChild(playerHead);
-            
-            group.appendChild(player);
+            group.appendChild(createPlayerSprite(x, y, cellSize));
             break;
     }
-    
+
     return group;
 }
 
