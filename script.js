@@ -1144,6 +1144,41 @@ function actionB() {
     if (gameState.inBattle) playerSpecialAttack();
 }
 
+// iOS対応 - タッチイベント最適化とダブルタップ防止
+function setupiOSCompatibility() {
+    // ダブルタップズーム防止
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    // タッチムーブでスクロール防止
+    document.addEventListener('touchmove', function(e) {
+        if (e.scale !== 1) { e.preventDefault(); }
+    }, { passive: false });
+
+    // コンテキストメニュー防止
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // 選択防止
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+
+    // ページ移動防止
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    });
+}
+
 // キーボード操作
 document.addEventListener('keydown', function(e) {
     if (!gameState.gameStarted) {
@@ -1189,13 +1224,11 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// タッチイベント最適化
-document.addEventListener('touchstart', function() {}, { passive: true });
-
 // DOMコンテンツ読み込み完了時に初期化
 document.addEventListener('DOMContentLoaded', function() {
     try {
         initializeDOM();
+        setupiOSCompatibility(); // iOS対応設定を追加
         console.log('DOM初期化完了');
         
         // 音声システム初期化（ユーザーインタラクション後）
@@ -1220,7 +1253,7 @@ window.addEventListener('error', function(e) {
 });
 
 // 初期化メッセージ
-console.log('サラリーマンRPG - ダーク会社編 読み込み完了！');
+console.log('サラリーマンRPG - ダーク会社編 iOS対応版 読み込み完了！');
 console.log('操作方法:');
 console.log('- 矢印キーまたはWASDで移動');
 console.log('- ZキーまたはEnterで攻撃');
@@ -1230,3 +1263,4 @@ console.log('- Hキーでヘルプ表示/非表示');
 console.log('- 数字の敵（1,2,3）で異なるタイプの敵と戦闘');
 console.log('- 黄色いエレベーターで移動、紫のショップで買い物');
 console.log('- タッチ操作も可能です！');
+console.log('- iOS Safari対応: タップズーム防止機能搭載！');
