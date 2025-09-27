@@ -3,6 +3,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* iOS タップズーム完全防止 */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -14,6 +18,9 @@ body {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    /* iOS Safari 専用設定 */
+    -webkit-text-size-adjust: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 画面の基本設定 */
@@ -71,231 +78,6 @@ body {
     font-size: 1.5rem;
     border: 3px solid #ffffff;
     border-radius: 10px;
-    cursor: pointer;
-    margin-top: 30px;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.game-over-container button:hover,
-.game-clear-container button:hover {
-    background: #2980b9;
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-    .title-container {
-        padding: 30px 20px;
-        margin: 20px;
-    }
-    
-    .title-container h1 {
-        font-size: 2.5rem;
-    }
-    
-    .title-container h2 {
-        font-size: 1.2rem;
-    }
-    
-    .status-bar {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .player-info {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    #controller {
-        padding: 15px 15px 80px 15px;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: space-between;
-    }
-    
-    .dpad {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .dpad-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 1rem;
-    }
-    
-    .action-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-    
-    .menu-buttons {
-        bottom: -50px;
-        gap: 15px;
-    }
-    
-    .menu-btn {
-        padding: 6px 12px;
-        font-size: 0.8rem;
-        min-width: 70px;
-    }
-    
-    .battle-container,
-    .shop-container,
-    .help-container {
-        padding: 20px;
-        margin: 20px;
-    }
-    
-    .battle-area {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .battle-controls {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .vs-text {
-        font-size: 1.5rem;
-    }
-    
-    .shop-item {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .title-container h1 {
-        font-size: 2rem;
-    }
-    
-    .start-button {
-        font-size: 1.2rem;
-        padding: 12px 25px;
-    }
-    
-    #gameArea {
-        padding: 10px;
-    }
-    
-    .hp-bar {
-        width: 80px;
-        height: 12px;
-    }
-    
-    #controller {
-        padding: 10px 10px 70px 10px;
-        gap: 15px;
-    }
-    
-    .dpad {
-        width: 90px;
-        height: 90px;
-    }
-    
-    .dpad-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 0.9rem;
-    }
-    
-    .action-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 1.1rem;
-    }
-    
-    .menu-buttons {
-        bottom: -45px;
-        gap: 10px;
-    }
-    
-    .menu-btn {
-        padding: 5px 10px;
-        font-size: 0.7rem;
-        min-width: 60px;
-    }
-    
-    .battle-header h3,
-    .shop-header h3,
-    .help-header h3 {
-        font-size: 1.5rem;
-    }
-    
-    .character-sprite {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .battle-btn,
-    .buy-btn,
-    .close-shop-btn,
-    .close-help-btn {
-        padding: 10px 20px;
-        font-size: 1rem;
-    }
-    
-    .game-over-container,
-    .game-clear-container {
-        padding: 30px 20px;
-        margin: 20px;
-    }
-    
-    .game-over-container h1,
-    .game-clear-container h1 {
-        font-size: 2rem;
-    }
-}
-
-/* アニメーション */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* アクセシビリティ改善 */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #0a0a0a;
-    }
-}
-
-/* フォーカス対応 */
-button:focus,
-.dpad-btn:focus,
-.action-btn:focus {
-    outline: 2px solid #3498db;
-    outline-offset: 2px;
-};
     cursor: pointer;
     margin: 20px auto;
     width: fit-content;
@@ -959,4 +741,258 @@ button:focus,
     border: 2px solid #ffffff;
     padding: 15px 30px;
     font-size: 1.2rem;
-    border-radius: 10px
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 20px auto;
+    width: fit-content;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.game-over-container button:hover,
+.game-clear-container button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .title-container {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .title-container h1 {
+        font-size: 2.5rem;
+    }
+    
+    .title-container h2 {
+        font-size: 1.2rem;
+    }
+    
+    .status-bar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .player-info {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    #controller {
+        padding: 15px 15px 80px 15px;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+    }
+    
+    .dpad {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .dpad-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .action-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .menu-buttons {
+        bottom: -50px;
+        gap: 15px;
+    }
+    
+    .menu-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-width: 70px;
+    }
+    
+    .battle-container,
+    .shop-container,
+    .help-container {
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .battle-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .battle-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .vs-text {
+        font-size: 1.5rem;
+    }
+    
+    .shop-item {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-container h1 {
+        font-size: 2rem;
+    }
+    
+    .start-button {
+        font-size: 1.2rem;
+        padding: 12px 25px;
+    }
+    
+    #gameArea {
+        padding: 10px;
+    }
+    
+    .hp-bar {
+        width: 80px;
+        height: 12px;
+    }
+    
+    #controller {
+        padding: 10px 10px 70px 10px;
+        gap: 15px;
+    }
+    
+    .dpad {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .dpad-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .action-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+    
+    .menu-buttons {
+        bottom: -45px;
+        gap: 10px;
+    }
+    
+    .menu-btn {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+        min-width: 60px;
+    }
+    
+    .battle-header h3,
+    .shop-header h3,
+    .help-header h3 {
+        font-size: 1.5rem;
+    }
+    
+    .character-sprite {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .battle-btn,
+    .buy-btn,
+    .close-shop-btn,
+    .close-help-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    .game-over-container,
+    .game-clear-container {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .game-over-container h1,
+    .game-clear-container h1 {
+        font-size: 2rem;
+    }
+}
+
+/* アニメーション */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* アクセシビリティ改善 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #0a0a0a;
+    }
+}
+
+/* フォーカス対応 */
+button:focus,
+.dpad-btn:focus,
+.action-btn:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* iOS Safari 専用追加設定 */
+input, textarea, select {
+    -webkit-appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+
+/* すべてのボタン要素にiOS対応を適用 */
+button,
+.start-button,
+.dpad-btn,
+.action-btn,
+.menu-btn,
+.battle-btn,
+.buy-btn,
+.close-shop-btn,
+.close-help-btn,
+.sound-toggle {
+    /* iOS完全タップズーム防止 */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: none;
+    /* iOS ダブルタップ防止 */
+    -webkit-user-select: none;
+    user-select: none;
+}
